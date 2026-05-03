@@ -57,6 +57,13 @@ BJJ practitioners (white → black belt) who want structured learning tied to re
 - Lesson page: Mark as Learned / Save for Later buttons wired to `lessonProgress` module
 - `markViewed` called on lesson mount — groundwork for lesson-viewed analytics
 
+### Demo Mode (2026-02-03)
+- Fixed bottom-left **DEMO MODE** badge with popover (sample user info, Restart Tour, Reset Demo Data)
+- Auto-seeded sample data on first visit: Alex Reyes (Blue Belt), 14 rounds across 12 days with a Mount-improvement arc, streak 4/best 9, weakness history seeded so the improvement banner fires, 3 lessons learned + 2 saved, 2 session recaps
+- 5-step guided tour auto-starts on first load: Dashboard → Library → Lesson → Logger → Progress — with progress bar, Next/Back/Skip, and "Take me there" fallback
+- All demo state persisted in localStorage under `flowroll.demo_mode.v1` + `flowroll.demo_tour.v1` — tour state survives reloads; once dismissed stays dismissed until manually restarted
+- Clear client-preview messaging throughout popover copy
+
 ## Backlog / Next
 ### P1
 - Real Supabase auth swap (replace `AuthContext` internals, keep surface identical)

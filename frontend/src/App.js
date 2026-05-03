@@ -1,4 +1,5 @@
 import "@/App.css";
+import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
 import Navbar from "@/components/Navbar";
@@ -17,9 +18,23 @@ import Community from "@/pages/Community";
 import Coaching from "@/pages/Coaching";
 import Schools from "@/pages/Schools";
 import Store from "@/pages/Store";
+import DemoBadge from "@/components/DemoBadge";
+import DemoTour from "@/components/DemoTour";
+import {
+  isDemoEnabled,
+  needsInitialSeed,
+  seedDemoData,
+} from "@/lib/demoMode";
 import { Toaster } from "@/components/ui/sonner";
 
 function App() {
+  useEffect(() => {
+    // Client preview build: auto-seed sample data on first load.
+    if (isDemoEnabled() && needsInitialSeed()) {
+      seedDemoData();
+    }
+  }, []);
+
   return (
     <div className="App" data-testid="app-root">
       <AuthProvider>
@@ -55,6 +70,12 @@ function App() {
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </main>
+          {isDemoEnabled() && (
+            <>
+              <DemoTour />
+              <DemoBadge />
+            </>
+          )}
           <Toaster position="bottom-right" theme="dark" />
         </BrowserRouter>
       </AuthProvider>
