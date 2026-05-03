@@ -1,6 +1,7 @@
 const ROUNDS_KEY = "flowroll.rounds.v1";
 const SESSIONS_KEY = "flowroll.sessions.v1";
 const WEAKNESS_HISTORY_KEY = "flowroll.weakness_history.v1";
+const STREAK_KEY = "flowroll.streak.v1";
 
 export const loadRounds = () => {
   try {
@@ -22,6 +23,7 @@ export const addRound = (round) => {
     { ...round, id: `r_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`, createdAt: new Date().toISOString() },
   ];
   saveRounds(next);
+  updateStreakOnLog();
   return next;
 };
 
@@ -83,33 +85,85 @@ export const computeStats = (rounds) => {
 };
 
 // ─── Streak ────────────────────────────────────────────────────────────
-// Counts consecutive days (local time) ending today or yesterday where at
-// least one round was logged. If the most recent round is older than
-// yesterday, the streak has broken → returns 0.
+// Persisted state: { streak, bestStreak, lastLogDate } in localStorage.
+// - Log on same day as lastLogDate → no change.
+// - Log on consecutive day → streak += 1, update bestStreak if exceeded.
+// - Gap > 1 day (or first log) → streak = 1.
 const dayKey = (d) =>
-  `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+    d.getDate(),
+  ).padStart(2, "0")}`;
 
-export const computeStreak = (rounds = loadRounds()) => {
-  if (!rounds.length) return 0;
-  const dateSet = new Set(
-    rounds.map((r) => dayKey(new Date(r.createdAt))),
-  );
+const daysBetween = (aKey, bKey) => {
+  const [ay, am, ad] = aKey.split("-").map(Number);
+  const [by, bm, bd] = bKey.split("-").map(Number);
+  const a = new Date(ay, am - 1, ad);
+  const b = new Date(by, bm - 1, bd);
+  return Math.round((b - a) / 86400000);
+};
 
-  const cursor = new Date();
-  cursor.setHours(0, 0, 0, 0);
+export const loadStreakData = () => {
+  try {
+    const raw = localStorage.getItem(STREAK_KEY);
+    if (!raw) return { streak: 0, bestStreak: 0, lastLogDate: null };
+    const parsed = JSON.parse(raw);
+    return {
+      streak: parsed.streak || 0,
+      bestStreak: parsed.bestStreak || 0,
+      lastLogDate: parsed.lastLogDate || null,
+    };
+  } catch {
+    return { streak: 0, bestStreak: 0, lastLogDate: null };
+  }
+};
 
-  // If no round today, start checking from yesterday (streak can still be alive).
-  if (!dateSet.has(dayKey(cursor))) {
-    cursor.setDate(cursor.getDate() - 1);
-    if (!dateSet.has(dayKey(cursor))) return 0;
+const saveStreakData = (data) => {
+  localStorage.setItem(STREAK_KEY, JSON.stringify(data));
+};
+
+// Called whenever a round is logged. Returns the updated streak state.
+export const updateStreakOnLog = (now = new Date()) => {
+  const today = dayKey(now);
+  const { streak, bestStreak, lastLogDate } = loadStreakData();
+
+  let nextStreak;
+  if (!lastLogDate) {
+    nextStreak = 1;
+  } else if (lastLogDate === today) {
+    nextStreak = streak || 1;
+  } else {
+    const gap = daysBetween(lastLogDate, today);
+    nextStreak = gap === 1 ? streak + 1 : 1;
   }
 
-  let streak = 0;
-  while (dateSet.has(dayKey(cursor))) {
-    streak += 1;
-    cursor.setDate(cursor.getDate() - 1);
+  const nextBest = Math.max(bestStreak, nextStreak);
+  const data = {
+    streak: nextStreak,
+    bestStreak: nextBest,
+    lastLogDate: today,
+  };
+  saveStreakData(data);
+  return data;
+};
+
+// Read-time helper: if the user hasn't logged today OR yesterday, the
+// current streak has effectively broken. Persist the reset so the UI
+// reflects it immediately (without requiring a new log).
+export const getStreak = (now = new Date()) => {
+  const data = loadStreakData();
+  if (!data.lastLogDate || data.streak === 0) return data;
+  const today = dayKey(now);
+  const gap = daysBetween(data.lastLogDate, today);
+  if (gap > 1) {
+    const reset = {
+      streak: 0,
+      bestStreak: data.bestStreak,
+      lastLogDate: data.lastLogDate,
+    };
+    saveStreakData(reset);
+    return reset;
   }
-  return streak;
+  return data;
 };
 
 // ─── Session feedback ─────────────────────────────────────────────────

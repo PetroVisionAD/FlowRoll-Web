@@ -15,7 +15,7 @@ import { POSITIONS, SCENARIOS, getPosition } from "@/data/library";
 import {
   loadRounds,
   computeStats,
-  computeStreak,
+  getStreak,
   computeWeaknessImprovement,
 } from "@/lib/storage";
 
@@ -42,7 +42,7 @@ export default function Dashboard() {
 
   const stats = useMemo(() => computeStats(rounds), [rounds]);
   const focus = useMemo(() => pickTodaysFocus(stats), [stats]);
-  const streak = useMemo(() => computeStreak(rounds), [rounds]);
+  const streakData = useMemo(() => getStreak(), [rounds]);
   const improvement = useMemo(
     () => computeWeaknessImprovement(stats),
     [stats],
@@ -95,24 +95,38 @@ export default function Dashboard() {
           </Link>
         </div>
 
-        {(streak > 0 || improvement) && (
+        {(streakData.streak > 0 || improvement) && (
           <div
             className="mt-7 flex flex-col sm:flex-row sm:items-center gap-x-8 gap-y-3 text-sm"
             data-testid="feedback-strip"
           >
-            {streak > 0 && (
+            {streakData.streak > 0 && (
               <div
-                className="flex items-center gap-2 font-ui"
+                className="flex items-center gap-3 font-ui"
                 data-testid="streak-banner"
               >
                 <Flame
                   className="w-4 h-4 text-[#FF3B30]"
                   fill="currentColor"
                 />
-                <span className="text-white font-semibold">
-                  {streak} Day
+                <span data-testid="streak-current">
+                  <span className="text-white font-semibold">
+                    {streakData.streak} Day
+                  </span>
+                  <span className="text-white/60"> Streak</span>
                 </span>
-                <span className="text-white/60">Training Streak</span>
+                {streakData.bestStreak > 0 && (
+                  <>
+                    <span className="text-white/20">·</span>
+                    <span
+                      className="text-white/50 label-eyebrow"
+                      data-testid="streak-best"
+                    >
+                      Best: {streakData.bestStreak}{" "}
+                      {streakData.bestStreak === 1 ? "Day" : "Days"}
+                    </span>
+                  </>
+                )}
               </div>
             )}
             {improvement && (
