@@ -42,6 +42,8 @@ export default function Dashboard() {
 
   const stats = useMemo(() => computeStats(rounds), [rounds]);
   const focus = useMemo(() => pickTodaysFocus(stats), [stats]);
+  // Intentionally recompute on rounds change; read is cheap.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const streakData = useMemo(() => getStreak(), [rounds]);
   const improvement = useMemo(
     () => computeWeaknessImprovement(stats),

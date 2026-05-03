@@ -1,4 +1,5 @@
 import { Link, useParams, Navigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import {
   ChevronLeft,
   ListChecks,
@@ -8,10 +9,19 @@ import {
   Zap,
   Flag,
   Play,
+  Check,
+  Bookmark,
 } from "lucide-react";
 import { getPosition, getScenario, getScenarios } from "@/data/library";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  getLessonState,
+  toggleLearned,
+  toggleSaved,
+  markViewed,
+} from "@/lib/lessonProgress";
+import { toast } from "sonner";
 
 export default function Lesson() {
   const { positionId, scenarioId } = useParams();
@@ -19,8 +29,34 @@ export default function Lesson() {
   const scenario = getScenario(positionId, scenarioId);
   const siblings = getScenarios(positionId);
 
+  const [lessonState, setLessonState] = useState({
+    learned: false,
+    saved: false,
+  });
+
+  useEffect(() => {
+    if (positionId && scenarioId) {
+      setLessonState(getLessonState(positionId, scenarioId));
+      markViewed(positionId, scenarioId);
+    }
+  }, [positionId, scenarioId]);
+
   if (!position || !scenario)
     return <Navigate to={`/library/${positionId || ""}`} replace />;
+
+  const handleToggleLearned = () => {
+    const next = toggleLearned(positionId, scenarioId);
+    setLessonState(next);
+    toast(
+      next.learned ? "Marked as learned" : "Removed from learned",
+    );
+  };
+
+  const handleToggleSaved = () => {
+    const next = toggleSaved(positionId, scenarioId);
+    setLessonState(next);
+    toast(next.saved ? "Lesson saved" : "Removed from saved");
+  };
 
   const currentIndex = siblings.findIndex((s) => s.id === scenarioId);
   const prev = currentIndex > 0 ? siblings[currentIndex - 1] : null;
@@ -64,6 +100,38 @@ export default function Lesson() {
               {t}
             </Badge>
           ))}
+        </div>
+
+        <div className="flex flex-wrap gap-2 mt-5" data-testid="lesson-actions">
+          <Button
+            onClick={handleToggleLearned}
+            variant="outline"
+            data-testid="lesson-mark-learned"
+            className={`rounded-sm font-ui font-semibold h-10 px-4 fr-pressable ${
+              lessonState.learned
+                ? "bg-[#FF3B30] border-[#FF3B30] text-white hover:bg-[#D63026]"
+                : "bg-transparent border-white/15 text-white hover:bg-white/5"
+            }`}
+          >
+            <Check className="w-4 h-4 mr-2" />
+            {lessonState.learned ? "Learned" : "Mark as Learned"}
+          </Button>
+          <Button
+            onClick={handleToggleSaved}
+            variant="outline"
+            data-testid="lesson-save"
+            className={`rounded-sm font-ui font-semibold h-10 px-4 fr-pressable ${
+              lessonState.saved
+                ? "bg-[#007AFF] border-[#007AFF] text-white hover:bg-[#0066D1]"
+                : "bg-transparent border-white/15 text-white hover:bg-white/5"
+            }`}
+          >
+            <Bookmark
+              className="w-4 h-4 mr-2"
+              fill={lessonState.saved ? "currentColor" : "none"}
+            />
+            {lessonState.saved ? "Saved" : "Save for Later"}
+          </Button>
         </div>
       </div>
 

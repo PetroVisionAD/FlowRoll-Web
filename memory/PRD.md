@@ -1,62 +1,80 @@
 # FlowRoll-Web — PRD
 
 ## Original Problem Statement
-Create a React + Vite web application called FlowRoll-Web — a web-based jiu-jitsu training platform focused on learning guard situations, escapes, and counters using video-based lessons. NOT a mobile logging app; a structured learning system. No backend, no auth, local state only.
+Web-based jiu-jitsu training platform focused on learning guard situations, escapes, and counters using video-based lessons. Structured learning system — not a logging app, not a generic social network.
 
 ## Architecture
-- **Frontend**: React 19 (CRA + Craco — supervisor configured; equivalent to Vite for the user's purposes), TailwindCSS, shadcn/ui, react-router-dom v7, recharts, lucide-react, sonner toasts.
-- **Storage**: `localStorage` (keys: `flowroll.rounds.v1`, `flowroll.sessions.v1`).
-- **Backend**: None (not used).
-- **Routes**: `/`, `/library`, `/library/:positionId`, `/lesson/:positionId/:scenarioId`, `/logger`, `/progress`.
+- **Frontend**: React 19 (CRA + Craco), TailwindCSS, shadcn/ui, react-router-dom v7, recharts, lucide-react, sonner toasts.
+- **Storage**: `localStorage` only.
+  - `flowroll.rounds.v1` — round log
+  - `flowroll.sessions.v1` — completed sessions
+  - `flowroll.weakness_history.v1` — weakness snapshots
+  - `flowroll.streak.v1` — `{streak, bestStreak, lastLogDate}`
+  - `flowroll.lesson_progress.v1` — `{positionId:scenarioId: {learned, saved, viewedAt}}`
+  - `flowroll.mock_user.v1` — mock auth user
+- **Backend**: None yet. Mocked auth and mock data designed to be swapped for Supabase (auth + postgres) with zero UI changes.
+- **Auth**: `AuthContext` mirrors Supabase API shape (`signIn`, `signUp`, `signOut`, `user`, `ready`, `updateProfile`). Swap implementation → real cloud sync.
+
+## Routes
+- `/` Dashboard · `/library` · `/library/:positionId` · `/lesson/:positionId/:scenarioId` · `/logger` · `/progress`
+- `/auth/login` · `/auth/register`
+- `/profile` · `/saved` · `/history`
+- `/community` · `/coaching` · `/schools` · `/store`
 
 ## User Persona
-BJJ practitioners (white → black belt) who want structured learning tied to real performance data. They roll, log rounds, and drill the positions where they lose most.
+BJJ practitioners (white → black belt) who want structured learning tied to real performance data. Over time: athletes who also want community, private coaching, and local gym discovery.
 
-## Core Requirements (Static)
-- Dashboard with Today's Focus + Weakness Alert + Continue Training + Browse Library CTAs
-- Training Library with 6 position cards
-- Situation View listing scenarios per position
-- Lesson page with HTML5 video + key steps + when-to-use + common mistakes + 3-stage drill progression (static / progressive / live)
-- Round logger (belt, starting position, result, optional submission, add/finish session)
-- Progress page with win/loss stats, loss rate by position, weakest position highlight, recharts bar chart
-- Dark theme, top nav, card-based, desktop-first responsive
-- All interactive elements have `data-testid`
+## Core Requirements
+- Dashboard (Today's Focus, Weakness Alert, Continue Training, Browse Library, streak banner, weakness-improvement banner)
+- Library (6 positions) → Scenario list → Lesson (HTML5 video, key steps, when-to-use, mistakes, 3-stage drills, Mark as Learned, Save)
+- Round Logger with session feedback
+- Progress page (stats, weakest banner, loss-rate chart, per-position breakdown)
+- Streak tracking (current + best)
+- Multi-user placeholder surface: auth, profile, saved progress, training history
+- Discover surface: community, coaching (Google Meet), schools, store
+- Dark theme, top nav + mobile tabs, card-based, large tap targets, all `data-testid`s
 
-## Implemented (2026-02-03)
-- Complete 6-screen structure with routing and top-nav (desktop + mobile tabs)
-- Full BJJ content library: 6 positions × 2–3 scenarios each, with realistic key steps, mistakes, and drill instructions
-- Functional HTML5 video player (sample Big Buck Bunny mp4) on every lesson
-- Lesson prev/next within a position
-- Logger with form validation, session tracking, all-time history, delete + clear-session
-- Progress page: stats cards, weakness banner, loss-rate bar chart (weakest bar in red), per-position breakdown
-- localStorage persistence of rounds and sessions
-- Design system: Bebas Neue display / IBM Plex Sans body / Outfit UI, #FF3B30 primary, #007AFF secondary, `.fr-card` hover lift + red glow
-- Toast feedback via sonner on all mutations
-- Empty states on Dashboard (no data), Logger (no rounds), Progress (no data)
-- Dashboard "Today's Focus" auto-routes Continue Training to weakest position's first scenario once data exists
-- 14/14 E2E tests passed (Playwright via testing subagent)
+## Implemented
+### MVP (2026-02-03)
+- 6-screen structure, full BJJ library, HTML5 video, localStorage rounds, design system (Bebas Neue / IBM Plex / Outfit, #FF3B30 / #007AFF on pure black), 14/14 E2E tests
 
-## Added (2026-02-03 — Streak + Feedback)
-- **Training Streak**: `computeStreak()` derives consecutive-day streak from round timestamps; dashboard shows `Flame icon · X Day Training Streak` when streak > 0.
-- **Session improvement feedback**: `computeSessionFeedback(session, prior)` compares current session loss-rate per position vs. prior baseline; emits toast `"{Position} improved"` when ≥15pp drop with ≥2 rounds on both sides. Triggered on Finish Session.
-- **Weakness improvement feedback**: `computeWeaknessImprovement(stats)` uses a rolling weakness-snapshot history (`flowroll.weakness_history.v1`) to detect ≥10pp drop in a previously-flagged position's loss rate; shows dashboard note `"You are improving in {Position}"` with delta.
-- No gamification UI — plain text signals only.
+### Streak + Feedback (2026-02-03)
+- Persisted streak state (`{streak, bestStreak, lastLogDate}`) updated in `addRound`
+- Session improvement toast ("X improved") on Finish Session when loss-rate drops ≥15pp
+- Weakness improvement banner ("You are improving in X") when a prior weakness drops ≥10pp
+
+### Multi-user Foundation (2026-02-03)
+- `AuthContext` with Supabase-shaped API (mock for now)
+- Login / Register pages with belt selector + Google sign-in placeholder
+- Profile page (avatar, belt, home gym, editable) with stat overview & links
+- Saved Progress page (Learned / Saved tabs, grid of lesson cards)
+- Training History page (rounds grouped by day, streak chips)
+- Community page (mock threads, category filter, search, sign-in nudge) — training-scoped only
+- Coaching page (mock coach cards, Google Meet booking placeholder)
+- Schools page (mock gym list, ZIP search, Use My Location, map placeholder)
+- Store page (mock product grid, Notify Me placeholder)
+- Navbar: primary links + Discover dropdown + UserMenu (avatar-aware)
+- Lesson page: Mark as Learned / Save for Later buttons wired to `lessonProgress` module
+- `markViewed` called on lesson mount — groundwork for lesson-viewed analytics
 
 ## Backlog / Next
 ### P1
-- Add bookmarks/favorites for lessons (stars icon on scenario cards)
-- "Session recap" modal after Finish Session with session-level stats
-- Filter/search on library page
-- Submission breakdown chart (which submissions you finish / get caught by)
-
+- Real Supabase auth swap (replace `AuthContext` internals, keep surface identical)
+- Persist rounds / sessions / progress / streak / weakness history per-user in Supabase tables
+- Real threads + replies backend (Supabase + realtime)
+- Coach availability + Google Calendar booking → real Meet link
+- Academy DB + Google Maps on Schools page
+- Store: real catalog + Stripe checkout
 ### P2
-- Import real BJJ video URLs (current is placeholder Big Buck Bunny)
-- Export rounds as CSV
-- Keyboard shortcuts for logger
+- Admin tooling for verified coaches/schools
+- Profile avatar upload + home-gym autocomplete (using schools DB)
+- Real BJJ video content CMS
+- Export data (CSV)
 - PWA / offline support
-- Add stripes/belt progression tracker
 
 ## Known Limitations
-- Video content is placeholder (Big Buck Bunny) — no real BJJ footage
-- No account sync — localStorage is device-specific
-- Weakness Alert requires ≥2 rounds in a position to surface
+- Multi-user features are **mocked locally only** — no real sync between devices
+- Google sign-in button is placeholder / disabled
+- Google Meet booking toast shows a generated dummy link
+- School listings, coach listings, and store products are seed data
+- Community threads are read-only preview; new thread click shows informational toast
