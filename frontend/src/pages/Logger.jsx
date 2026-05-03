@@ -29,6 +29,9 @@ import {
   addRound,
   saveRounds,
   addSession,
+  computeSessionFeedback,
+  computeStats,
+  recordWeaknessSnapshot,
 } from "@/lib/storage";
 import { toast } from "sonner";
 
@@ -84,12 +87,33 @@ export default function Logger() {
     }
     const wins = sessionRounds.filter((r) => r.result === "Win").length;
     const losses = sessionRounds.filter((r) => r.result === "Loss").length;
+
+    // Compute prior rounds = all rounds minus this session
+    const sessionIds = new Set(sessionRounds.map((r) => r.id));
+    const priorRounds = rounds.filter((r) => !sessionIds.has(r.id));
+
+    // 1. Session-level improvement feedback
+    const feedbacks = computeSessionFeedback(sessionRounds, priorRounds);
+    feedbacks.forEach((f) => {
+      toast.success(f.message, {
+        description: "Session improvement detected.",
+      });
+    });
+
+    // 2. Record new weakness snapshot from updated stats
+    const updatedStats = computeStats(rounds);
+    recordWeaknessSnapshot(updatedStats.weakest);
+
     addSession({
       roundCount: sessionRounds.length,
       wins,
       losses,
+      feedbacks: feedbacks.map((f) => f.message),
     });
-    toast.success(`Session finished — ${sessionRounds.length} rounds logged.`);
+
+    if (!feedbacks.length) {
+      toast.success(`Session finished — ${sessionRounds.length} rounds logged.`);
+    }
     setSessionRounds([]);
   };
 

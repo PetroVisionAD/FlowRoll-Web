@@ -12,7 +12,12 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { POSITIONS, SCENARIOS, getPosition } from "@/data/library";
-import { loadRounds, computeStats } from "@/lib/storage";
+import {
+  loadRounds,
+  computeStats,
+  computeStreak,
+  computeWeaknessImprovement,
+} from "@/lib/storage";
 
 // Pick a "Today's Focus" scenario — use weakest position if data exists,
 // otherwise pick closed-guard/posture-broken as default.
@@ -37,6 +42,11 @@ export default function Dashboard() {
 
   const stats = useMemo(() => computeStats(rounds), [rounds]);
   const focus = useMemo(() => pickTodaysFocus(stats), [stats]);
+  const streak = useMemo(() => computeStreak(rounds), [rounds]);
+  const improvement = useMemo(
+    () => computeWeaknessImprovement(stats),
+    [stats],
+  );
 
   const focusPosition = getPosition(focus.positionId);
   const focusScenario = SCENARIOS[focus.positionId].find(
@@ -84,6 +94,41 @@ export default function Dashboard() {
             </Button>
           </Link>
         </div>
+
+        {(streak > 0 || improvement) && (
+          <div
+            className="mt-7 flex flex-col sm:flex-row sm:items-center gap-x-8 gap-y-3 text-sm"
+            data-testid="feedback-strip"
+          >
+            {streak > 0 && (
+              <div
+                className="flex items-center gap-2 font-ui"
+                data-testid="streak-banner"
+              >
+                <Flame
+                  className="w-4 h-4 text-[#FF3B30]"
+                  fill="currentColor"
+                />
+                <span className="text-white font-semibold">
+                  {streak} Day
+                </span>
+                <span className="text-white/60">Training Streak</span>
+              </div>
+            )}
+            {improvement && (
+              <div
+                className="flex items-center gap-2 font-ui"
+                data-testid="improvement-banner"
+              >
+                <TrendingUp className="w-4 h-4 text-[#007AFF]" />
+                <span className="text-white">{improvement.message}</span>
+                <span className="label-eyebrow text-white/40">
+                  {improvement.from}% → {improvement.to}%
+                </span>
+              </div>
+            )}
+          </div>
+        )}
       </section>
 
       <div className="fr-hairline mb-10" />

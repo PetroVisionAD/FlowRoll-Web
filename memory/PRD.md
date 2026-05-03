@@ -36,6 +36,12 @@ BJJ practitioners (white → black belt) who want structured learning tied to re
 - Dashboard "Today's Focus" auto-routes Continue Training to weakest position's first scenario once data exists
 - 14/14 E2E tests passed (Playwright via testing subagent)
 
+## Added (2026-02-03 — Streak + Feedback)
+- **Training Streak**: `computeStreak()` derives consecutive-day streak from round timestamps; dashboard shows `Flame icon · X Day Training Streak` when streak > 0.
+- **Session improvement feedback**: `computeSessionFeedback(session, prior)` compares current session loss-rate per position vs. prior baseline; emits toast `"{Position} improved"` when ≥15pp drop with ≥2 rounds on both sides. Triggered on Finish Session.
+- **Weakness improvement feedback**: `computeWeaknessImprovement(stats)` uses a rolling weakness-snapshot history (`flowroll.weakness_history.v1`) to detect ≥10pp drop in a previously-flagged position's loss rate; shows dashboard note `"You are improving in {Position}"` with delta.
+- No gamification UI — plain text signals only.
+
 ## Backlog / Next
 ### P1
 - Add bookmarks/favorites for lessons (stars icon on scenario cards)
