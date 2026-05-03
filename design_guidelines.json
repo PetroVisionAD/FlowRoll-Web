@@ -1,0 +1,91 @@
+{
+  "theme": "dark",
+  "archetype": "The Performance Pro",
+  "typography": {
+    "heading_font": "Bebas Neue",
+    "subheading_font": "Outfit",
+    "body_font": "IBM Plex Sans",
+    "scale": {
+      "h1": "text-5xl sm:text-6xl tracking-tight leading-none uppercase",
+      "h2": "text-3xl sm:text-4xl tracking-tight leading-tight",
+      "h3": "text-xl sm:text-2xl font-semibold",
+      "h4": "text-lg font-medium",
+      "body": "text-base leading-relaxed",
+      "label": "text-xs tracking-[0.2em] uppercase font-bold"
+    }
+  },
+  "colors": {
+    "background": "#0A0A0A",
+    "surface": "#141414",
+    "surface_hover": "#1E1E1E",
+    "primary": "#FF3B30",
+    "primary_hover": "#D63026",
+    "secondary": "#007AFF",
+    "text_main": "#FFFFFF",
+    "text_muted": "#A1A1AA",
+    "border": "rgba(255, 255, 255, 0.1)",
+    "border_focus": "rgba(255, 59, 48, 0.5)"
+  },
+  "spacing_and_layout": {
+    "global_padding": "px-4 sm:px-8 md:px-12",
+    "container_max_width": "max-w-7xl mx-auto",
+    "card_padding": "p-6 sm:p-8",
+    "grid_dashboard": "grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6",
+    "grid_library": "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+  },
+  "surface_strategies": {
+    "cards": "Flat background (#141414), 1px solid border (border-white/10), rounded-md. Hover: -translate-y-1, shadow-[0_0_15px_rgba(255,59,48,0.15)], border-red-500/40.",
+    "buttons": "Rectangular (rounded-sm), high contrast. Primary: bg-[#FF3B30] text-white hover:bg-[#D63026]. Secondary: bg-transparent border border-white/20 text-white hover:bg-white/5.",
+    "header": "Crystal Glass: bg-black/60 backdrop-blur-xl border-b border-white/10, sticky top-0 z-50."
+  },
+  "components": {
+    "navigation": "Top navigation bar with Logo, links (Dashboard, Library, Logger, Progress), and primary 'Log Round' CTA.",
+    "video_player": "16:9 aspect ratio, dark placeholder with centered play icon, border-white/10.",
+    "badges": "Used for opponent belts (White, Blue, Purple, Brown, Black) and weakness alerts. Small, uppercase, bold, high contrast.",
+    "forms": "Shadcn components heavily customized: Input, Select. Dark backgrounds (#141414), white text, focus ring in primary red."
+  },
+  "animations": {
+    "hover": "transition-all duration-200 ease-out",
+    "page_load": "framer-motion staggered fade-in up for grid items",
+    "interactive": "Active states slightly scale down (scale-95)."
+  },
+  "media": {
+    "images": [
+      {
+        "category": "hero_background",
+        "url": "https://images.unsplash.com/photo-1770513649465-2c60c8039806?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2MjJ8MHwxfHNlYXJjaHwxfHxneW0lMjB0ZXh0dXJlJTIwYmFja2dyb3VuZCUyMGRhcmt8ZW58MHx8fHwxNzc3ODEyMjI2fDA&ixlib=rb-4.1.0&q=85",
+        "description": "Dark gym interior for atmospheric backgrounds"
+      },
+      {
+        "category": "training_placeholder_1",
+        "url": "https://images.pexels.com/photos/15545735/pexels-photo-15545735.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "description": "Top view of BJJ grappling match"
+      },
+      {
+        "category": "training_placeholder_2",
+        "url": "https://images.pexels.com/photos/15545734/pexels-photo-15545734.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "description": "Two men engaged in BJJ gi training"
+      },
+      {
+        "category": "athlete_portrait",
+        "url": "https://images.unsplash.com/photo-1549505415-e16dbd446231?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2OTV8MHwxfHNlYXJjaHwxfHxhdGhsZXRlJTIwcG9ydHJhaXQlMjBkYXJrfGVufDB8fHx8MTc3NzgxMjIyNnww&ixlib=rb-4.1.0&q=85",
+        "description": "Dark athlete portrait"
+      }
+    ],
+    "icons": {
+      "library": "@phosphor-icons/react",
+      "instructions": "Use Phosphor icons with 'duotone' or 'bold' weight for a tactical feel."
+    }
+  },
+  "instructions_to_main_agent": [
+    "Strictly follow the color palette. Do NOT use default tailwind slate/gray; stick to pure black, white, and red/blue accents.",
+    "For headings, install and apply 'Bebas Neue'. Body text should use 'IBM Plex Sans'.",
+    "All interactive elements must have data-testid attributes.",
+    "Do not use card components everywhere. Rely on raw divs with borders (border-white/10) to create a 'Control Room' grid layout.",
+    "Implement Shadcn UI for forms, selects, and dialogs, but override their default styles to match the dark tactical theme (remove border-radius, use sharp edges).",
+    "Library cards should be dense and informative, using hover states to reveal depth.",
+    "Use Framer Motion for subtle page load staggers and route transitions.",
+    "The Progress page should emphasize data visualization. Use Recharts with the defined brand colors (Red, Blue, White).",
+    "Do not use generic placeholder text; populate dummy data realistically suited for a Jiu-Jitsu training app."
+  ]
+}
