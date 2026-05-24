@@ -163,6 +163,126 @@ export const seedDemoData = () => {
     JSON.stringify(DEMO_LESSON_PROGRESS),
   );
   localStorage.setItem("flowroll.mock_user.v1", JSON.stringify(DEMO_USER));
+  seedPerformanceData();
+};
+
+// ─── Performance demo data ─────────────────────────────────────────
+const perfDayKey = (n) => {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+    d.getDate(),
+  ).padStart(2, "0")}`;
+};
+
+const seedPerformanceData = () => {
+  // Targets — moderate values for a Blue Belt athlete.
+  localStorage.setItem(
+    "flowroll.perf.targets.v1",
+    JSON.stringify({
+      targetWeight: 76,
+      weightClass: "Light Featherweight",
+      protein: 170,
+      carbs: 240,
+      fats: 75,
+      calories: 2400,
+      waterMl: 3000,
+    }),
+  );
+
+  // 8 days of weight, gently trending down ~0.8 kg.
+  const weights = [
+    { days: 7, weight: 78.4 },
+    { days: 6, weight: 78.2 },
+    { days: 5, weight: 78.0 },
+    { days: 4, weight: 77.8 },
+    { days: 3, weight: 77.5 },
+    { days: 2, weight: 77.3 },
+    { days: 1, weight: 77.1 },
+    { days: 0, weight: 77.0 },
+  ];
+  localStorage.setItem(
+    "flowroll.perf.weight.v1",
+    JSON.stringify(
+      weights.map(({ days, weight }) => ({
+        date: perfDayKey(days),
+        weight,
+      })),
+    ),
+  );
+
+  // Macros — 7 days, with hit/miss days that drive the protein × win rate
+  // insight (protein-hit days line up with recent winning rounds).
+  const macros = {};
+  const macroDays = [
+    { d: 7, p: 95, c: 180, f: 60, k: 1800 }, // miss
+    { d: 6, p: 100, c: 200, f: 65, k: 1950 }, // miss
+    { d: 5, p: 160, c: 230, f: 70, k: 2300 }, // hit
+    { d: 4, p: 175, c: 260, f: 80, k: 2500 }, // hit
+    { d: 3, p: 170, c: 250, f: 78, k: 2450 }, // hit
+    { d: 2, p: 175, c: 245, f: 76, k: 2420 }, // hit
+    { d: 1, p: 180, c: 250, f: 80, k: 2480 }, // hit
+    { d: 0, p: 90, c: 160, f: 55, k: 1700 }, // today: in progress
+  ];
+  macroDays.forEach((m) => {
+    macros[perfDayKey(m.d)] = {
+      protein: m.p,
+      carbs: m.c,
+      fats: m.f,
+      calories: m.k,
+    };
+  });
+  localStorage.setItem("flowroll.perf.macros.v1", JSON.stringify(macros));
+
+  // Hydration — a couple of low days to trigger the fatigue insight.
+  const hydration = {};
+  const hydroDays = [
+    { d: 7, ml: 1400, e: false, s: false }, // low
+    { d: 6, ml: 1600, e: false, s: false }, // low
+    { d: 5, ml: 2600, e: true, s: false },
+    { d: 4, ml: 3100, e: true, s: false },
+    { d: 3, ml: 3300, e: true, s: true },
+    { d: 2, ml: 3000, e: true, s: false },
+    { d: 1, ml: 3200, e: true, s: false },
+    { d: 0, ml: 1800, e: false, s: false }, // today: still drinking
+  ];
+  hydroDays.forEach((h) => {
+    hydration[perfDayKey(h.d)] = {
+      waterMl: h.ml,
+      electrolytes: h.e,
+      sauna: h.s,
+    };
+  });
+  localStorage.setItem(
+    "flowroll.perf.hydration.v1",
+    JSON.stringify(hydration),
+  );
+
+  // Recovery — low recovery on days 7 & 6 (which align with Mount-loss
+  // rounds in the round seed), high recovery on days 3-1 (aligns with wins).
+  // This makes the Recovery × Mount-position insight fire.
+  const recovery = {};
+  const recoveryDays = [
+    { d: 7, sleep: 5.5, sore: 4, energy: 2 }, // low
+    { d: 6, sleep: 6, sore: 4, energy: 2 }, // low
+    { d: 5, sleep: 7, sore: 3, energy: 3 }, // moderate
+    { d: 4, sleep: 7.5, sore: 2, energy: 4 }, // high-ish
+    { d: 3, sleep: 8, sore: 2, energy: 5 }, // high
+    { d: 2, sleep: 8, sore: 2, energy: 4 }, // high
+    { d: 1, sleep: 7.5, sore: 2, energy: 4 }, // high
+    { d: 0, sleep: 7, sore: 2, energy: 4 }, // today
+  ];
+  recoveryDays.forEach((r) => {
+    recovery[perfDayKey(r.d)] = {
+      sleep: r.sleep,
+      soreness: r.sore,
+      energy: r.energy,
+    };
+  });
+  localStorage.setItem(
+    "flowroll.perf.recovery.v1",
+    JSON.stringify(recovery),
+  );
 };
 
 // True when no app data exists yet — lets us seed only on a brand-new install.

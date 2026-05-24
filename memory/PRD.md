@@ -64,6 +64,18 @@ BJJ practitioners (white → black belt) who want structured learning tied to re
 - All demo state persisted in localStorage under `flowroll.demo_mode.v1` + `flowroll.demo_tour.v1` — tour state survives reloads; once dismissed stays dismissed until manually restarted
 - Clear client-preview messaging throughout popover copy
 
+### Performance Module (2026-02-03)
+- New **Performance** primary nav item (5th primary link), route `/performance`
+- 5 sections on one page, dark/red/grayscale visual language matching the rest of the app:
+  1. **Weight Tracker** — quick-add input, current weight + 7-day trend chart (Recharts LineChart), optional target weight + weight class
+  2. **Macros** — 4 inline-editable cards (Protein/Carbs/Fats/Calories) with progress bars vs targets and live coaching chips ("Protein target missed", "Good fuel day", "Recovery intake low")
+  3. **Hydration** — water counter with quick-add 250/500/750 ml + undo, electrolytes toggle, sauna/heavy-sweat toggle, feedback chip ("Hydration low" / "Good recovery hydration")
+  4. **Recovery** — sleep hours input, soreness (1–5) and energy (1–5) rating rows; computes weighted score → status (High/Moderate/Low Recovery) with mat-focused guidance ("Good day for hard rounds" / "Consider drilling-focused training")
+  5. **Performance Insights** — deterministic correlation logic (`lib/insights.js`): position loss-rate on low vs high recovery days, protein-hit days vs win rate, low-hydration days vs next-day energy, sleep ≥7h vs win rate. No AI, no LLM.
+- Edit-targets dialog for weight class + macro/hydration goals
+- All data in localStorage (`flowroll.perf.*` keys); cleared/reseeded by Demo Mode reset
+- Demo seed: 8 days of weight trending down 78.4→77.0, 7 days of macros (with hit/miss split that drives the protein insight), 8 days of hydration (with 2 low days), 8 days of recovery (low → high arc lining up with the Mount win streak). Insights fire immediately on demo load.
+
 ## Backlog / Next
 ### P1
 - Real Supabase auth swap (replace `AuthContext` internals, keep surface identical)

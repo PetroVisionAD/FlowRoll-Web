@@ -1,5 +1,5 @@
 import "@/App.css";
-import { useEffect } from "react";
+import { useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
 import Navbar from "@/components/Navbar";
@@ -9,6 +9,7 @@ import SituationView from "@/pages/SituationView";
 import Lesson from "@/pages/Lesson";
 import Logger from "@/pages/Logger";
 import Progress from "@/pages/Progress";
+import Performance from "@/pages/Performance";
 import Login from "@/pages/auth/Login";
 import Register from "@/pages/auth/Register";
 import Profile from "@/pages/Profile";
@@ -28,12 +29,14 @@ import {
 import { Toaster } from "@/components/ui/sonner";
 
 function App() {
-  useEffect(() => {
-    // Client preview build: auto-seed sample data on first load.
+  // Seed runs synchronously in a useState initializer so children mount AFTER
+  // localStorage is populated — avoids the "Not logged" empty-state flash.
+  useState(() => {
     if (isDemoEnabled() && needsInitialSeed()) {
       seedDemoData();
     }
-  }, []);
+    return true;
+  });
 
   return (
     <div className="App" data-testid="app-root">
@@ -51,6 +54,7 @@ function App() {
               />
               <Route path="/logger" element={<Logger />} />
               <Route path="/progress" element={<Progress />} />
+              <Route path="/performance" element={<Performance />} />
 
               {/* Auth */}
               <Route path="/auth/login" element={<Login />} />

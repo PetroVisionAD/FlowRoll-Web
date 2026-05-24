@@ -12,6 +12,7 @@ import {
   MapPin,
   ShoppingBag,
   Compass,
+  Activity,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,6 +29,7 @@ const PRIMARY_LINKS = [
   { to: "/library", label: "Library", icon: BookOpen },
   { to: "/logger", label: "Logger", icon: ClipboardList },
   { to: "/progress", label: "Progress", icon: TrendingUp },
+  { to: "/performance", label: "Performance", icon: Activity },
 ];
 
 const DISCOVER_LINKS = [
